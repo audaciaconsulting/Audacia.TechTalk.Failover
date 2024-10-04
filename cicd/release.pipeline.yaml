@@ -1,0 +1,47 @@
+name: $(Build.SourceBranchName).$(rev:r)
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: windows-latest
+
+stages:
+  # Build All Projects
+  - template: stages/build.stage.yaml
+    parameters:
+      shouldPublish: true
+
+  # Deploy to Production UKSouth
+  - template: stages/deploy.stage.yaml
+    parameters:
+      subscription: 'audacia-tech-talks'
+      resourceGroup: "audacia-tech-talks"
+      environmentName: 'Production_uksouth'
+      environmentId: 'Production'
+      environmentDisplayName: 'Production (UK South)'
+      variableGroups:
+        - 'TechTalk.Failover.CICD.UkSouth'
+        - 'TechTalk.Failover.Release.UkSouth'
+        - 'TechTalk.Failover.AzureResources.Production'
+      region: 'uksouth'
+      useStagingSlots: false
+      dependsOn: Stage_Build_TechTalk
+
+  # Deploy to Production UKWest
+  - template: stages/deploy.stage.yaml
+    parameters:
+      subscription: 'audacia-tech-talks'
+      resourceGroup: "audacia-tech-talks"
+      environmentName: 'Production_ukwest'
+      environmentId: 'Production'
+      environmentDisplayName: 'Production (UK West)'
+      variableGroups:
+        - 'TechTalk.Failover.CICD.UkWest'
+        - 'TechTalk.Failover.Release.UkWest'
+        - 'TechTalk.Failover.AzureResources.Production'
+      region: 'ukwest'
+      useStagingSlots: false
+      dependsOn: Stage_Build_TechTalk

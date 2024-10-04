@@ -1,0 +1,29 @@
+# Please read the documentation at /src/infrastructure/terraform/README.md before using this pipeline.
+name: $(Year:yy)$(DayOfYear).$(rev:r)
+trigger: none
+
+pool: 
+  vmImage: windows-latest
+
+parameters:
+- name: environmentName
+  displayName: Azure DevOps Environment
+  type: string
+  default: Production
+  values:
+  - Production
+variables:
+  - group: TechTalk.Failover.Provision.${{ parameters.environmentName }}
+
+stages:
+  - template: stages/provision.stage.yaml
+    parameters:
+      terraformDirectory: $(Build.SourcesDirectory)/infrastructure/terraform
+      customer: $(Customer)
+      environmentServiceConnector: $(EnvironmentServicePrincipal)
+      environmentName: ${{ parameters.environmentName }}
+      environmentId: $(EnvironmentId) # Name of the environment in Azure. example qa, uat, production
+      terraformStateServicePrincipal: $(TerraformStateServicePrincipal) # Service principal for subscription to store terraform in
+      environmentServicePrincipal: $(EnvironmentServicePrincipal) # Service principal for subscription to provision resources in
+      terraformResourceGroup: $(TerraformResourceGroup)
+      terraformStorageAccount: $(TerraformStorageAccount)

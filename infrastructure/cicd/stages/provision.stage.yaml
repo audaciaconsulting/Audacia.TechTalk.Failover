@@ -1,0 +1,70 @@
+# Job template to provision resources in a specific environment
+parameters:
+  terraformDirectory: ''
+  customer: '' # Name of the customer, e.g. Solus, TechBuyer, ADM
+  environmentName: '' # Name of the environment
+  environmentId: '' # Name of the environment in Azure, primarily used to suffix the container used for storing Terraform state, e.g. 'qa', 'uat', 'live'
+  terraformStateServicePrincipal: '' # Subscription to store backend in
+  environmentServicePrincipal: '' # Subscription to provision resources in
+  environmentServiceConnector: ''
+  terraformResourceGroup: ''
+  terraformStorageAccount: ''
+
+stages:
+  - stage: Stage_Infrastructure_Provision
+    displayName: Provision Infrastructure
+    jobs:
+      - job: InitProvision
+        displayName: Init Provision
+        steps:
+          - checkout: self
+
+          - template: ../tasks/create-storage.yaml
+            parameters:
+              storageContainerName: $(ResourceName)-${{ parameters.environmentId }}
+              backendStorageAccount: $(terraformStorageAccount)
+              subscription: ${{ parameters.terraformStateServicePrincipal }}
+
+          - task: TerraformInstaller@1
+            displayName: Install Terraform
+
+          - task: TerraformTaskV4@4
+            displayName: Initialize Terraform
+            name: TerraformInit
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: ${{parameters.terraformDirectory}}
+              backendServiceArm: ${{parameters.terraformStateServicePrincipal}}
+              backendAzureRmResourceGroupName: ${{parameters.terraformResourceGroup}}
+              backendAzureRmStorageAccountName: ${{parameters.terraformStorageAccount}}
+              backendAzureRmContainerName: $(ResourceName)-${{ parameters.environmentId }}
+              backendAzureRmKey: $(ResourceName)-${{ parameters.environmentId }}.tfstate
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Validate'
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              workingDirectory: ${{parameters.terraformDirectory}}
+
+          - task: TerraformTaskV4@4
+            name: terraformPlan
+            displayName: Create Terraform Plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              commandOptions: '-input=false -out=main.tfplan'
+              environmentServiceNameAzureRM: ${{ parameters.environmentServicePrincipal}}
+              workingDirectory: ${{parameters.terraformDirectory}}
+            env:
+              TF_VAR_SQL_SERVER_PASSWORD: $(SQL_SERVER_PASSWORD)
+
+          - task: TerraformTaskV4@4
+            displayName: Apply Terraform Plan            
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              commandOptions: 'main.tfplan'
+              workingDirectory: ${{parameters.terraformDirectory}}
+              environmentServiceNameAzureRM: ${{ parameters.environmentServiceConnector }}

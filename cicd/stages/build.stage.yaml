@@ -1,0 +1,57 @@
+parameters:
+  jobId: ''
+  shouldPublish: false
+
+stages:
+  - stage: 'Stage_Build_TechTalk'
+    displayName: Build
+    jobs:
+      - job: 'Job_Build_Portal'
+        displayName: ${{ parameters.displayName }}
+        dependsOn: ${{ parameters.dependsOn }}
+        steps:
+          - checkout: self
+            clean: true
+
+          - task: NuGetToolInstaller@1
+            inputs:
+              versionSpec:
+              checkLatest: true
+
+          - task: NuGetAuthenticate@1
+
+          - task: DotNetCoreCLI@2
+            displayName: .NET Restore
+            inputs:
+              command: restore
+              projects: ${{ parameters.projects }}
+              feedsToUse: 'config'
+              nugetConfigPath: $(Build.SourcesDirectory)/nuget.config
+
+          - task: DotNetCoreCLI@2
+            displayName: .NET Build
+            inputs:
+              command: build
+              projects: ${{ parameters.projects}}
+              publishWebProjects: false
+              arguments: >
+                --configuration Release
+                --no-restore
+
+          - task: DotNetCoreCLI@2
+            condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+            displayName: .NET Publish
+            inputs:
+              command: publish
+              publishWebProjects: false
+              projects: ${{ parameters.projects}}
+              arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory) --no-restore --no-build'
+              zipAfterPublish: ${{ parameters.zipAfterPublish }}
+              modifyOutputPath: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: ${{ parameters.displayName}}
+            condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+            inputs:
+              PathtoPublish: '$(build.ArtifactStagingDirectory)/${{ parameters.path}}'
+              ArtifactName: "Portal API"

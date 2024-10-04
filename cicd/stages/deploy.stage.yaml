@@ -1,0 +1,50 @@
+parameters:
+  - name: "dependsOn" # The JobId of the dependant task that this but wait to be completed
+    type: string
+    default: ""
+  - name: "environmentName" # Name of the environment e.g. 'QA' or 'UAT'
+    type: string
+    default: ""
+  - name: "environmentId" # Id of the environment e.g. 'qa' or 'uat'
+    type: string
+    default: ""
+  - name: "environmentDisplayName" # Display Name of the environment e.g. 'Quality Assurance' or 'User Acceptance'
+    type: string
+    default: ""
+  - name: "region" # Azure region where the apps will be deployed too
+    type: string
+  - name: "subscription" # Subscription to deploy resources to
+    type: string
+    default: ""
+  - name: "resourceGroup" # Resource group to deploy resources to
+    type: string
+  - name: "variableGroups" # Variable groups for azure library
+    type: object
+    default: []
+  - name: useStagingSlots # Whether the deploy step should deploy to a staging slot
+    type: boolean
+    default: false
+
+stages:
+  - stage: Stage_Deploy_${{ parameters.environmentName }}
+    condition: and(succeeded(), not(eq(variables['Build.Reason'], 'PullRequest')), not(eq(variables['Build.Reason'], 'Schedule')))
+    displayName: Deploy ${{ parameters.environmentDisplayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    variables:
+      - ${{ each variableGroup in parameters.variableGroups }}:
+          - group: ${{ variableGroup }}
+    jobs:
+      - template: ../jobs/deployment/deploy-app.job.yaml
+        parameters:
+          jobId: "Portal"
+          displayName: "Deploy Portal"
+          subscription: ${{ parameters.subscription }}
+          environmentId: ${{ parameters.environmentId }}
+          environmentName: ${{ parameters.environmentName }}
+          resourceGroup: ${{ parameters.resourceGroup }}
+          region: ${{ parameters.region }}
+          useStagingSlots: ${{ parameters.useStagingSlots }}
+          apiAppServiceName: $(Resource_WebApp_PortalApi-Name)
+          apiPackageName: "Portal API"
+          uiAppServiceName: $(Resource_WebApp_PortalUi-Name)
+          uiPackageName: "Portal"

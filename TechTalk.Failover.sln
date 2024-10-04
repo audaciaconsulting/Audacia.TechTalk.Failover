@@ -1,0 +1,134 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audacia.TechTalk.Failover.Api", "src\Audacia.TechTalk.Failover.Api\Audacia.TechTalk.Failover.Api.csproj", "{DAE9D681-2FAB-494D-A588-912D1418C98E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{61C03B7A-82A1-4D08-AB00-104B2C465883}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cicd", "cicd", "{E20049C7-D53E-4533-B337-498C2FEE123F}"
+	ProjectSection(SolutionItems) = preProject
+		cicd\release.pipeline.yaml = cicd\release.pipeline.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobs", "jobs", "{5FE1D05C-E6D1-4EB3-8471-51B7E98403AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{B8D287E6-D396-4120-8502-DE3B3E009F07}"
+	ProjectSection(SolutionItems) = preProject
+		cicd\stages\build.stage.yaml = cicd\stages\build.stage.yaml
+		cicd\stages\deploy.stage.yaml = cicd\stages\deploy.stage.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tasks", "tasks", "{6DC3C028-68F1-4450-967D-DB5EFCD95FBD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure", "azure", "{1CB91B97-3A72-42B7-8907-7C789ABB6F29}"
+	ProjectSection(SolutionItems) = preProject
+		cicd\tasks\azure\run-health-checks.tasks.yaml = cicd\tasks\azure\run-health-checks.tasks.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deployment", "deployment", "{2CA1AFE8-3859-4437-A0B3-DC08012FACE6}"
+	ProjectSection(SolutionItems) = preProject
+		cicd\jobs\deployment\deploy-app.job.yaml = cicd\jobs\deployment\deploy-app.job.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastructure", "{A5D5DE07-833D-49EA-B76F-56DD899EB452}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cicd", "cicd", "{9F6B337A-E550-4E0E-B5E4-A5E7E2B939C2}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\cicd\provision.pipeline.yaml = infrastructure\cicd\provision.pipeline.yaml
+		infrastructure\cicd\README.md = infrastructure\cicd\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "terraform", "terraform", "{99B7D818-58EB-4B43-9DEB-45A79365D6E1}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\main.tf = infrastructure\terraform\main.tf
+		infrastructure\terraform\terraform.tfvars = infrastructure\terraform\terraform.tfvars
+		infrastructure\terraform\variables.tf = infrastructure\terraform\variables.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{584BB362-C9EA-4529-87D8-50F6B80A4A26}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\cicd\stages\provision.stage.yaml = infrastructure\cicd\stages\provision.stage.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tasks", "tasks", "{E1FF8143-1513-442D-A7EB-3292A6745D98}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\cicd\tasks\create-storage.yaml = infrastructure\cicd\tasks\create-storage.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{B3960659-D118-4027-9972-0B15839CB2D0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "analytics", "analytics", "{B88FDBB7-58EC-4614-A71D-56494B8A8CC0}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\modules\analytics\main.tf = infrastructure\terraform\modules\analytics\main.tf
+		infrastructure\terraform\modules\analytics\outputs.tf = infrastructure\terraform\modules\analytics\outputs.tf
+		infrastructure\terraform\modules\analytics\variables.tf = infrastructure\terraform\modules\analytics\variables.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{6AB1226C-5898-4E02-8F53-39E100E1E8E0}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\modules\apps\main.tf = infrastructure\terraform\modules\apps\main.tf
+		infrastructure\terraform\modules\apps\outputs.tf = infrastructure\terraform\modules\apps\outputs.tf
+		infrastructure\terraform\modules\apps\variables.tf = infrastructure\terraform\modules\apps\variables.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "front-door", "front-door", "{437B4206-0187-4CC3-8ED6-4D869DD23A10}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\modules\front-door\main.tf = infrastructure\terraform\modules\front-door\main.tf
+		infrastructure\terraform\modules\front-door\outputs.tf = infrastructure\terraform\modules\front-door\outputs.tf
+		infrastructure\terraform\modules\front-door\variables.tf = infrastructure\terraform\modules\front-door\variables.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "storage", "storage", "{4DF041B5-1939-4742-BEA5-2E1A3F23F642}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\modules\storage\main.tf = infrastructure\terraform\modules\storage\main.tf
+		infrastructure\terraform\modules\storage\outputs.tf = infrastructure\terraform\modules\storage\outputs.tf
+		infrastructure\terraform\modules\storage\variables.tf = infrastructure\terraform\modules\storage\variables.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{97059B90-AE44-4D41-AA19-510887EBCB96}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-web-app", "api-web-app", "{EF9D03DF-0BDC-4F6B-B43A-EDEA731F99FE}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\modules\apps\modules\api-web-app\main.tf = infrastructure\terraform\modules\apps\modules\api-web-app\main.tf
+		infrastructure\terraform\modules\apps\modules\api-web-app\outputs.tf = infrastructure\terraform\modules\apps\modules\api-web-app\outputs.tf
+		infrastructure\terraform\modules\apps\modules\api-web-app\variables.tf = infrastructure\terraform\modules\apps\modules\api-web-app\variables.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui-web-app", "ui-web-app", "{ED9C045F-E302-4238-9465-4545316A9BB3}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure\terraform\modules\apps\modules\ui-web-app\main.tf = infrastructure\terraform\modules\apps\modules\ui-web-app\main.tf
+		infrastructure\terraform\modules\apps\modules\ui-web-app\outputs.tf = infrastructure\terraform\modules\apps\modules\ui-web-app\outputs.tf
+		infrastructure\terraform\modules\apps\modules\ui-web-app\variables.tf = infrastructure\terraform\modules\apps\modules\ui-web-app\variables.tf
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DAE9D681-2FAB-494D-A588-912D1418C98E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAE9D681-2FAB-494D-A588-912D1418C98E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAE9D681-2FAB-494D-A588-912D1418C98E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAE9D681-2FAB-494D-A588-912D1418C98E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DAE9D681-2FAB-494D-A588-912D1418C98E} = {61C03B7A-82A1-4D08-AB00-104B2C465883}
+		{5FE1D05C-E6D1-4EB3-8471-51B7E98403AE} = {E20049C7-D53E-4533-B337-498C2FEE123F}
+		{B8D287E6-D396-4120-8502-DE3B3E009F07} = {E20049C7-D53E-4533-B337-498C2FEE123F}
+		{6DC3C028-68F1-4450-967D-DB5EFCD95FBD} = {E20049C7-D53E-4533-B337-498C2FEE123F}
+		{1CB91B97-3A72-42B7-8907-7C789ABB6F29} = {6DC3C028-68F1-4450-967D-DB5EFCD95FBD}
+		{2CA1AFE8-3859-4437-A0B3-DC08012FACE6} = {5FE1D05C-E6D1-4EB3-8471-51B7E98403AE}
+		{9F6B337A-E550-4E0E-B5E4-A5E7E2B939C2} = {A5D5DE07-833D-49EA-B76F-56DD899EB452}
+		{99B7D818-58EB-4B43-9DEB-45A79365D6E1} = {A5D5DE07-833D-49EA-B76F-56DD899EB452}
+		{584BB362-C9EA-4529-87D8-50F6B80A4A26} = {9F6B337A-E550-4E0E-B5E4-A5E7E2B939C2}
+		{E1FF8143-1513-442D-A7EB-3292A6745D98} = {9F6B337A-E550-4E0E-B5E4-A5E7E2B939C2}
+		{B3960659-D118-4027-9972-0B15839CB2D0} = {99B7D818-58EB-4B43-9DEB-45A79365D6E1}
+		{B88FDBB7-58EC-4614-A71D-56494B8A8CC0} = {B3960659-D118-4027-9972-0B15839CB2D0}
+		{6AB1226C-5898-4E02-8F53-39E100E1E8E0} = {B3960659-D118-4027-9972-0B15839CB2D0}
+		{437B4206-0187-4CC3-8ED6-4D869DD23A10} = {B3960659-D118-4027-9972-0B15839CB2D0}
+		{4DF041B5-1939-4742-BEA5-2E1A3F23F642} = {B3960659-D118-4027-9972-0B15839CB2D0}
+		{97059B90-AE44-4D41-AA19-510887EBCB96} = {6AB1226C-5898-4E02-8F53-39E100E1E8E0}
+		{EF9D03DF-0BDC-4F6B-B43A-EDEA731F99FE} = {97059B90-AE44-4D41-AA19-510887EBCB96}
+		{ED9C045F-E302-4238-9465-4545316A9BB3} = {97059B90-AE44-4D41-AA19-510887EBCB96}
+	EndGlobalSection
+EndGlobal

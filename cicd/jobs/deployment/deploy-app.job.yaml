@@ -1,0 +1,93 @@
+parameters:
+  - name: 'jobId' # Id of job to reference for dependsOn
+    default: ''
+  - name: 'displayName' # Display name of the deploy app job
+    default: 'Deploy API + SPA Frontend'
+  - name: 'dependsOn'
+    default: ''
+  - name: 'buildType'
+    default: 'current'
+  - name: 'buildId'
+    default: ''
+  - name: 'pipelineIdentifier'
+    default: ''
+  - name: 'subscription' # Azure subscription ID
+    default: ''
+  - name: 'environmentId' # Id of the environment deploying too
+    type: string
+  - name: 'environmentName' # Name of environment deploying too
+    default: ''
+  - name: 'resourceGroup' # Azure resource group ID
+    default: ''
+  - name: 'region' # Azure region where the apps will be deployed to
+    type: string
+  - name: 'useStagingSlots' # Whether the deploy step should deploy to a staging slot
+    type: boolean
+    default: false
+  - name: 'apiAppServiceName'  # e.g. evolve-uat-portal-api-app-${{ parameters.region}}
+    default: ''
+  - name: 'apiPackageName' # e.g. 'Portal-API'
+    default: ''
+  - name: 'uiAppServiceName' # e.g. evolve-uat-portal-ui-app-${{ parameters.region}}
+    default: ''
+  - name: 'uiPackageName' # e.g. 'Portal-UI'
+    default: ''
+  - name: 'uiPackagePath' # e.g. '**/*.UI.zip'
+    default: ''
+
+jobs:
+  - deployment: 'Job_Deploy_WebApp_${{ parameters.environmentName }}_${{ parameters.jobId }}'
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    environment: ${{ parameters.environmentId }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: none
+            - download: none
+
+            - ${{ if eq(parameters.buildType, 'current') }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: Download API
+                  inputs:
+                    buildType: 'current'
+                    project: Evolve
+                    artifact: ${{ parameters.apiPackageName }}
+                    targetPath: $(Agent.TempDirectory)/ApiFiles/${{ parameters.apiPackageName }}
+            - ${{ else }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: Download API
+                  inputs:
+                    buildType: 'specific'
+                    project: Evolve
+                    definition: ${{ parameters.pipelineIdentifier }}
+                    buildVersionToDownload: 'specific'
+                    buildId: ${{ parameters.buildId }}
+                    artifact: ${{ parameters.apiPackageName }}
+                    targetPath: $(Agent.TempDirectory)/ApiFiles/${{ parameters.apiPackageName }}
+
+            - task: colinsalmcorner.colinsalmcorner-buildtasks.replace-tokens-task.ReplaceTokens@1
+              displayName: Replace tokens in API *.config
+              inputs:
+                sourcePath: $(Agent.TempDirectory)/ApiFiles/${{ parameters.apiPackageName }}
+                tokenRegex: \$\(([\w\-]+)\)
+
+            - task: FileTransform@1
+              displayName: "AppSettings Variable Substitution"
+              inputs:
+                folderPath: $(Agent.TempDirectory)/ApiFiles/${{ parameters.apiPackageName }}
+                fileType: "json"
+                targetFiles: "**/appsettings.json"
+
+            - task: AzureWebApp@1
+              displayName: "Azure App Service Deploy: API"
+              inputs:
+                azureSubscription: ${{ parameters.subscription }}
+                appName: ${{ parameters.apiAppServiceName }}${{ parameters.region }}
+                deployToSlotOrASEFlag: ${{ parameters.useStagingSlots }}
+                package: $(Agent.TempDirectory)/ApiFiles/${{ parameters.apiPackageName }}
+                appType: 'webAppLinux'
+                ${{ if eq(parameters.useStagingSlots, true) }}:
+                  slotName: "Staging"
+                  resourceGroupName: ${{ parameters.resourceGroup }}

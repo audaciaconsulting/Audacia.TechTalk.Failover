@@ -1,0 +1,130 @@
+# Task to run health checks (by sending a GET request to a preconfigured health-check endpoint)
+
+parameters:
+  appName: '' # The resource's name in azure
+  maxAttempts: 3 # The maximum amount of times to check is an app is health or not
+  sleepSeconds: 30 # The amount of seconds to sleep in between retry attempts
+  resourceGroupName: '' # The name of the resource group which the app service is in
+  useStagingSlots: false # If the health check should be on a staging slot
+  deploymentSlotName: 'Staging' # The name of the slot being queried
+  subscription: '' # Azure subscription ID
+  region: '' # Azure region where the apps will be deployed to
+  path: ''
+
+steps:
+  - task: AzureCLI@2
+    displayName: "Request Uri for ${{ parameters.appName }} (${{ parameters.region }})"
+    inputs:
+      azureSubscription: ${{ parameters.subscription }}
+      powerShellErrorActionPreference : Stop
+      failOnStandardError: true
+      scriptType: ps
+      scriptLocation: inlineScript
+      inlineScript: |
+        $defaultHostName = ""
+        $useStagingSlots = "${{parameters.useStagingSlots}}"
+
+        if ($useStagingSlots -eq "true")
+        {
+          $defaultHostName = az webapp show --name ${{parameters.appName}}${{ parameters.region }} --resource-group ${{parameters.resourceGroupName}} --slot ${{ parameters.deploymentSlotName }} --query "defaultHostName"
+        }
+        else {
+          $defaultHostName = az webapp show --name ${{parameters.appName}}${{ parameters.region }} --resource-group ${{parameters.resourceGroupName}} --query "defaultHostName";
+        }
+
+        $Uri = "https://$defaultHostName/${{parameters.path}}" -replace '"'
+
+        Write-Host "Setting variable.defaultHostName to $Uri"
+
+        Write-Host "##vso[task.setvariable variable=defaultHostName]$Uri"
+
+  - task: PowerShell@2
+    displayName: "${{ parameters.appName }} Health Checks"
+    inputs:
+      targetType : inline
+      errorActionPreference: 'stop'
+      failOnStderr: true
+      script: |
+        $url = "$(defaultHostName)"
+        $useStagingSlots = "${{parameters.useStagingSlots}}"
+        Write-Host "Running health checks on url $url"
+
+        function Invoke-RestMethodWithRetry {
+            param(
+                [string]$Uri
+            )
+            $sleepSeconds = ${{ parameters.sleepSeconds }}
+            $maxAttempts = ${{ parameters.maxAttempts }}
+            $attemptNumber = 1
+
+            while ($retryCount -le $maxAttempts) {
+                try {
+                    Write-Host "Checking health - attempt #$attemptNumber"
+                    $response = Invoke-RestMethod -Uri $Uri -Method Get -ContentType "application/json"
+                    return $response
+                }
+                catch {
+                    if ($attemptNumber -eq $maxAttempts) {
+                      # re-throw so we can parse the error in the calling script
+                      throw
+                    }
+
+                    Write-Warning "Request failed. Retrying in $sleepSeconds seconds..."
+                    Start-Sleep -Seconds $sleepSeconds
+                    $attemptNumber++
+                }
+            }
+        }
+
+        try
+        {
+          $result = Invoke-RestMethodWithRetry -Uri $url
+          # Exceptions are thrown if the status isn't 200, so hitting this line is an indication of success.
+          Write-Host 'The system is healthy'
+
+          if ($useStagingSlots -eq "true")
+          {
+            Write-Host "##vso[task.setvariable variable=stagingSlotIsHealth]$true"
+          }
+          else {
+            Write-Host "##vso[task.setvariable variable=productionSlotIsHealth]$true"
+          }
+
+          Exit 0
+        }
+        catch
+        {
+          Write-Warning "The system is not healthy"
+          $responseStatus = $_.Exception.Response.StatusCode
+          Write-Warning "Response status $responseStatus"
+
+
+          if ($useStagingSlots -eq "true")
+          {
+            Write-Host "##vso[task.setvariable variable=stagingSlotIsHealth]$false"
+          }
+          else {
+            Write-Host "##vso[task.setvariable variable=productionSlotIsHealth]$false"
+          }
+
+          # Failed health checks also result in a 503, along with standard service unavailable errors.
+          if ($responseStatus -eq 503 -and $_.ErrorDetails -ne $null)
+          {
+            $responseDetails = $_.ErrorDetails | ConvertFrom-Json
+            foreach ($entry in $responseDetails.entries.psobject.Properties)
+            {
+                Write-Host ''
+                $name = $entry.Name
+                $value = $entry.Value
+                if ($value.status -eq "Healthy")
+                {
+                    Write-Host "$name - $value"
+                }
+                else
+                {
+                    Write-Warning "$name - $value"
+                }
+            }
+          }
+          Exit 1
+        }
